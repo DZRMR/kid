@@ -1,0 +1,2546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>宝贝学习乐园 🎈</title>
+    <!-- 引入拼音库 -->
+    <script src="https://cdn.jsdelivr.net/npm/pinyin@3.0.0/dist/pinyin.min.js">
+    </script>
+    <style>
+        /* ===== 全局重置 & 变量 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --pink: #FF9AA2;
+            --blue: #77B5FE;
+            --yellow: #FFD93D;
+            --green: #6BCB77;
+            --purple: #9B59B6;
+            --orange: #FF9F43;
+            --bg: #FFF8F0;
+            --card: #FFFFFF;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+            --radius: 24px;
+            --nav-h: 72px;
+            --sidebar-w: 200px;
+            --font: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', cursive, sans-serif;
+        }
+        html,
+        body {
+            height: 100%;
+            font-family: var(--font);
+            background: var(--bg);
+            color: #3D3D3D;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ===== 滚动条美化 ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--purple);
+            border-radius: 8px;
+        }
+
+        /* ===== 应用容器 ===== */
+        #app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg);
+        }
+
+        /* ===== PC 侧边栏 ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(180deg, #FFE5EC 0%, #E8F0FE 100%);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 3px solid rgba(255, 255, 255, 0.6);
+            flex-shrink: 0;
+            overflow-y: auto;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+        .sidebar .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--purple);
+            margin-bottom: 28px;
+            text-align: center;
+            line-height: 1.3;
+            padding: 0 10px;
+        }
+        .sidebar .logo span {
+            display: block;
+            font-size: 14px;
+            font-weight: 400;
+            color: #888;
+        }
+        .sidebar .nav-item {
+            width: 88%;
+            padding: 14px 12px;
+            margin: 4px 0;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: var(--font);
+        }
+        .sidebar .nav-item .icon {
+            font-size: 22px;
+        }
+        .sidebar .nav-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(1.02);
+        }
+        .sidebar .nav-item.active {
+            background: #FFFFFF;
+            color: var(--purple);
+            box-shadow: var(--shadow);
+            font-weight: 700;
+        }
+        .sidebar .nav-item.active .icon {
+            transform: scale(1.1);
+        }
+
+        /* ===== 主内容区 ===== */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ===== 顶部栏 ===== */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+            flex-shrink: 0;
+            min-height: 64px;
+        }
+        .topbar .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--purple);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .topbar .stars-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--yellow);
+            padding: 6px 16px 6px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #7A5A00;
+            box-shadow: 0 2px 12px rgba(255, 217, 61, 0.4);
+        }
+        .topbar .stars-display .star-icon {
+            font-size: 24px;
+        }
+
+        /* ===== 页面容器 ===== */
+        .page-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px 90px 24px;
+            background: var(--bg);
+        }
+        .page {
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== 移动端底部 Tab ===== */
+        .bottom-tab {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-top: 2px solid rgba(255, 255, 255, 0.6);
+            padding: 6px 0 env(safe-area-inset-bottom);
+            z-index: 20;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+            justify-content: space-around;
+            align-items: center;
+        }
+        .bottom-tab .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4px 6px;
+            border: none;
+            background: transparent;
+            font-family: var(--font);
+            font-size: 11px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 52px;
+            border-radius: 12px;
+            gap: 2px;
+        }
+        .bottom-tab .tab-item .tab-icon {
+            font-size: 26px;
+            line-height: 1;
+        }
+        .bottom-tab .tab-item .tab-label {
+            font-weight: 600;
+        }
+        .bottom-tab .tab-item.active {
+            color: var(--purple);
+            background: rgba(155, 89, 182, 0.10);
+        }
+        .bottom-tab .tab-item.active .tab-icon {
+            transform: scale(1.08);
+        }
+
+        /* ===== 通用组件 ===== */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--purple);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all 0.15s;
+            min-height: 48px;
+            min-width: 48px;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .btn:active {
+            transform: scale(0.94);
+        }
+        .btn-primary {
+            background: var(--blue);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #5A9FEF;
+        }
+        .btn-pink {
+            background: var(--pink);
+            color: #fff;
+        }
+        .btn-pink:hover {
+            background: #F0828A;
+        }
+        .btn-green {
+            background: var(--green);
+            color: #fff;
+        }
+        .btn-green:hover {
+            background: #50B861;
+        }
+        .btn-yellow {
+            background: var(--yellow);
+            color: #7A5A00;
+        }
+        .btn-yellow:hover {
+            background: #F5CD3A;
+        }
+        .btn-purple {
+            background: var(--purple);
+            color: #fff;
+        }
+        .btn-purple:hover {
+            background: #8543A0;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 3px solid var(--blue);
+            color: var(--blue);
+        }
+        .btn-outline:hover {
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 12px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 14px;
+        }
+
+        .letter-card {
+            aspect-ratio: 1 / 1;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            background: #F8F0FF;
+            color: var(--purple);
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+            border: 3px solid transparent;
+            min-height: 60px;
+        }
+        .letter-card:hover {
+            transform: scale(1.04);
+        }
+        .letter-card:active {
+            transform: scale(0.92);
+        }
+        .letter-card.correct {
+            border-color: var(--green);
+            background: #E8F8E8;
+        }
+        .letter-card.wrong {
+            border-color: var(--pink);
+            background: #FFECEC;
+        }
+        .letter-card.matched {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: scale(0.92);
+            border-color: var(--green);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 700;
+            background: var(--yellow);
+            color: #7A5A00;
+        }
+
+        .poem-card {
+            padding: 16px 20px;
+            border-radius: 18px;
+            background: #FDF5E6;
+            border-left: 6px solid var(--pink);
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .poem-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow);
+        }
+        .poem-card .poem-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--purple);
+        }
+        .poem-card .poem-author {
+            font-size: 15px;
+            color: #888;
+            margin-left: 10px;
+        }
+        .poem-card .poem-preview {
+            color: #666;
+            margin-top: 4px;
+            font-size: 16px;
+        }
+
+        /* 古诗详情 - 拼音标注 */
+        .poem-detail .poem-lines {
+            font-size: 26px;
+            line-height: 2.2;
+            text-align: center;
+            padding: 12px 0;
+        }
+        .poem-detail .poem-line {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2px 8px;
+            margin: 4px 0;
+        }
+        .char-with-pinyin {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #3D3D3D;
+        }
+        .char-with-pinyin .pinyin {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--purple);
+            letter-spacing: 1px;
+            line-height: 1.2;
+            min-height: 18px;
+        }
+        .char-with-pinyin .hanzi {
+            line-height: 1.4;
+        }
+
+        /* 数字卡片 */
+        .num-card {
+            aspect-ratio: 1 / 1;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #F0F7FF;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--blue);
+            cursor: pointer;
+            transition: all 0.15s;
+            min-height: 70px;
+            padding: 6px;
+            border: 3px solid transparent;
+        }
+        .num-card .num-dots {
+            font-size: 16px;
+            color: #888;
+            font-weight: 400;
+        }
+        .num-card.selected {
+            border-color: var(--blue);
+            background: #D6EAFF;
+        }
+
+        /* 选项按钮 */
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .option-btn {
+            padding: 14px 8px;
+            border-radius: 16px;
+            border: 3px solid #E8E8E8;
+            background: #FAFAFA;
+            font-size: 22px;
+            font-weight: 700;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all 0.15s;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3D3D3D;
+        }
+        .option-btn:active {
+            transform: scale(0.94);
+        }
+        .option-btn.selected-correct {
+            border-color: var(--green);
+            background: #E8F8E8;
+        }
+        .option-btn.selected-wrong {
+            border-color: var(--pink);
+            background: #FFECEC;
+        }
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .option-btn.show-correct {
+            border-color: var(--green);
+            background: #E8F8E8;
+        }
+
+        /* 闯关 */
+        .level-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .level-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #DDD;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            background: #F5F5F5;
+            color: #BBB;
+        }
+        .level-dot.done {
+            background: var(--green);
+            border-color: var(--green);
+            color: #fff;
+        }
+        .level-dot.active {
+            background: var(--yellow);
+            border-color: var(--yellow);
+            color: #7A5A00;
+            transform: scale(1.12);
+        }
+        .level-dot.wrong {
+            background: var(--pink);
+            border-color: var(--pink);
+            color: #fff;
+        }
+
+        /* 徽章墙 */
+        .badge-wall {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 16px;
+            margin: 12px 0;
+        }
+        .badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 8px;
+            border-radius: 18px;
+            background: #F8F0FF;
+            border: 3px solid #E8E0F0;
+            transition: all 0.3s;
+        }
+        .badge-item.locked {
+            opacity: 0.4;
+            filter: grayscale(0.6);
+        }
+        .badge-item .badge-icon {
+            font-size: 44px;
+            margin-bottom: 4px;
+        }
+        .badge-item .badge-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            text-align: center;
+        }
+
+        /* 反馈弹窗 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 30px 40px;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+            z-index: 100;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 90vw;
+        }
+        .toast.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .toast .toast-icon {
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+        .toast .toast-msg {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3D3D3D;
+        }
+        .toast .toast-sub {
+            font-size: 16px;
+            color: #888;
+            margin-top: 4px;
+        }
+        .toast .btn {
+            margin-top: 16px;
+        }
+
+        /* 遮罩 */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.25);
+            z-index: 99;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .bottom-tab {
+                display: flex;
+            }
+            .page-container {
+                padding: 16px 14px 100px 14px;
+            }
+            .topbar {
+                padding: 10px 16px;
+                min-height: 56px;
+            }
+            .topbar .page-title {
+                font-size: 18px;
+            }
+            .topbar .stars-display {
+                font-size: 15px;
+                padding: 4px 12px 4px 8px;
+            }
+            .letter-card {
+                font-size: 26px;
+                min-height: 52px;
+            }
+            .num-card {
+                font-size: 26px;
+                min-height: 60px;
+            }
+            .poem-detail .poem-lines {
+                font-size: 20px;
+            }
+            .char-with-pinyin {
+                font-size: 22px;
+            }
+            .char-with-pinyin .pinyin {
+                font-size: 12px;
+            }
+            .option-btn {
+                font-size: 18px;
+                min-height: 48px;
+            }
+            .grid-4 {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                gap: 8px;
+            }
+            .grid-3 {
+                grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+                gap: 8px;
+            }
+            .toast {
+                padding: 24px 20px;
+            }
+            .toast .toast-icon {
+                font-size: 44px;
+            }
+            .toast .toast-msg {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .bottom-tab {
+                display: none !important;
+            }
+        }
+
+        /* 辅助 */
+        .text-center {
+            text-align: center;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-20 {
+            margin-top: 20px;
+        }
+        .mb-12 {
+            margin-bottom: 12px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .w-full {
+            width: 100%;
+        }
+
+        /* 数数游戏 - 物品展示 */
+        .count-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding: 16px 0;
+        }
+        .count-item {
+            font-size: 40px;
+            animation: popIn 0.3s ease;
+            transition: transform 0.2s;
+        }
+        .count-item:hover {
+            transform: scale(1.08);
+        }
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 找规律图形 */
+        .pattern-display {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 12px 0;
+            font-size: 38px;
+        }
+        .pattern-display .pattern-item {
+            padding: 8px 14px;
+            border-radius: 14px;
+            background: #F5F0FF;
+            min-width: 50px;
+            text-align: center;
+        }
+        .pattern-display .pattern-item.question {
+            background: #FFF0E0;
+            border: 3px dashed var(--orange);
+            min-width: 56px;
+        }
+
+        /* 图形配对 */
+        .pair-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .pair-item {
+            aspect-ratio: 1 / 1;
+            border-radius: 18px;
+            background: #F8F0FF;
+            border: 3px solid #E8E0F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            cursor: pointer;
+            transition: all 0.15s;
+            min-height: 72px;
+        }
+        .pair-item:active {
+            transform: scale(0.92);
+        }
+        .pair-item.selected {
+            border-color: var(--blue);
+            background: #D6EAFF;
+            transform: scale(1.04);
+        }
+        .pair-item.matched {
+            border-color: var(--green);
+            background: #E8F8E8;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* ===== 排序题 ===== */
+        .sort-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding: 12px 0;
+        }
+        .sort-item {
+            padding: 12px 20px;
+            border-radius: 16px;
+            background: #F8F0FF;
+            border: 3px solid #E8E0F0;
+            font-size: 28px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            min-height: 52px;
+            min-width: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sort-item:active {
+            transform: scale(0.92);
+        }
+        .sort-item.placed {
+            border-color: var(--green);
+            background: #E8F8E8;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* 响应式微调 */
+        @media (max-width: 480px) {
+            .pair-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+            .pair-item {
+                font-size: 30px;
+                min-height: 60px;
+            }
+            .sort-item {
+                font-size: 22px;
+                padding: 8px 14px;
+                min-height: 44px;
+                min-width: 44px;
+            }
+            .pattern-display {
+                font-size: 30px;
+                gap: 8px;
+            }
+            .pattern-display .pattern-item {
+                padding: 6px 10px;
+                min-width: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- ===== PC侧边栏 ===== -->
+        <nav class="sidebar" id="sidebar">
+            <div class="logo">
+                🎈 宝贝学习乐园
+                <span>3岁+ 快乐成长</span>
+            </div>
+            <button class="nav-item active" data-page="alphabet">
+                <span class="icon">🔤</span> 字母乐园
+            </button>
+            <button class="nav-item" data-page="poetry">
+                <span class="icon">📜</span> 古诗花园
+            </button>
+            <button class="nav-item" data-page="numbers">
+                <span class="icon">🔢</span> 数字王国
+            </button>
+            <button class="nav-item" data-page="logic">
+                <span class="icon">🧩</span> 逻辑挑战
+            </button>
+            <button class="nav-item" data-page="adventure">
+                <span class="icon">🏆</span> 闯关冒险
+            </button>
+        </nav>
+
+        <!-- ===== 主区域 ===== -->
+        <div class="main">
+            <!-- 顶栏 -->
+            <header class="topbar">
+                <div class="page-title" id="pageTitle">🔤 字母乐园</div>
+                <div class="stars-display">
+                    <span class="star-icon">⭐</span>
+                    <span id="totalStars">0</span>
+                </div>
+            </header>
+
+            <!-- 页面容器 -->
+            <div class="page-container" id="pageContainer">
+
+                <!-- ====== 字母乐园 ====== -->
+                <div class="page active" id="page-alphabet">
+                    <div class="card">
+                        <div class="card-title">🎵 字母小火车 <span style="font-size:16px;font-weight:400;color:#888;">点击卡片听发音</span></div>
+                        <div class="grid-4" id="alphabetGrid"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🧩 大小写配对 <span style="font-size:16px;font-weight:400;color:#888;">点击大写，再点小写</span></div>
+                        <div id="pairGameArea">
+                            <div class="flex-center" style="gap:20px;flex-wrap:wrap;margin:8px 0;">
+                                <div style="font-size:48px;font-weight:700;background:#F0F7FF;padding:12px 24px;border-radius:20px;min-width:80px;text-align:center;" id="pairTarget">A</div>
+                                <div style="font-size:18px;color:#888;">⬇️ 配对小写</div>
+                            </div>
+                            <div class="grid-3" id="pairOptions" style="max-width:400px;margin:0 auto;"></div>
+                            <div class="text-center mt-12">
+                                <button class="btn btn-pink" id="resetPairBtn">🔄 重新配对</button>
+                                <span style="margin-left:12px;font-weight:600;" id="pairProgress">已配对: 0 / 26</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== 古诗花园 ====== -->
+                <div class="page" id="page-poetry">
+                    <div class="card">
+                        <div class="card-title">📜 古诗花园 <span style="font-size:16px;font-weight:400;color:#888;">点击诗名进入，点🔊听朗读</span></div>
+                        <div id="poemList"></div>
+                    </div>
+                    <div id="poemDetailContainer" style="display:none;">
+                        <div class="card poem-detail">
+                            <button class="btn btn-outline" id="backToPoemList" style="margin-bottom:12px;">⬅ 返回诗单</button>
+                            <div id="poemDetailContent"></div>
+                            <div class="text-center mt-12">
+                                <button class="btn btn-primary" id="readPoemBtn">🔊 朗读这首诗</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== 数字王国 ====== -->
+                <div class="page" id="page-numbers">
+                    <div class="card">
+                        <div class="card-title">🔢 数字认知 <span style="font-size:16px;font-weight:400;color:#888;">0 ~ 20</span></div>
+                        <div class="grid-4" id="numberGrid"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🧮 加减法小挑战</div>
+                        <div id="mathArea">
+                            <div style="font-size:36px;font-weight:700;text-align:center;padding:12px 0;" id="mathQuestion">3 + 2 = ?</div>
+                            <div class="option-grid" id="mathOptions" style="max-width:400px;margin:0 auto;"></div>
+                            <div class="text-center mt-12">
+                                <button class="btn btn-green" id="newMathBtn">🔄 下一题</button>
+                                <span style="margin-left:12px;font-weight:600;" id="mathScore">✅ 0 题</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🔢 数数小游戏 <span style="font-size:16px;font-weight:400;color:#888;">数一数有几个？</span></div>
+                        <div id="countGameArea">
+                            <div class="count-items" id="countItemsDisplay"></div>
+                            <div class="option-grid" id="countOptions" style="max-width:300px;margin:0 auto;"></div>
+                            <div class="text-center mt-12">
+                                <button class="btn btn-yellow" id="newCountBtn">🔄 换一组</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== 逻辑挑战 ====== -->
+                <div class="page" id="page-logic">
+                    <div class="card">
+                        <div class="card-title">🧩 逻辑小挑战 <span style="font-size:16px;font-weight:400;color:#888;">找规律 · 配对 · 排序</span></div>
+                        <div id="logicTypeSelector" class="flex-wrap" style="margin-bottom:12px;">
+                            <button class="btn btn-purple" data-logic="pattern">🔮 找规律</button>
+                            <button class="btn btn-pink" data-logic="pair">🎯 图形配对</button>
+                            <button class="btn btn-blue" data-logic="sort">📊 排序</button>
+                        </div>
+                        <div id="logicGameArea">
+                            <div id="logicQuestion" style="font-size:20px;font-weight:600;text-align:center;padding:8px 0;">点击上面开始挑战</div>
+                            <div id="logicDisplay"></div>
+                            <div class="option-grid" id="logicOptions" style="max-width:400px;margin:8px auto;"></div>
+                            <div class="text-center mt-12">
+                                <button class="btn btn-green" id="newLogicBtn">🔄 下一题</button>
+                                <span style="margin-left:12px;font-weight:600;" id="logicScore">✅ 0 题</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ====== 闯关冒险 ====== -->
+                <div class="page" id="page-adventure">
+                    <div class="card">
+                        <div class="card-title">🏆 闯关冒险 <span style="font-size:16px;font-weight:400;color:#888;">综合挑战，收集星星</span></div>
+                        <div id="adventureStatus" class="flex-wrap" style="margin-bottom:12px;">
+                            <span class="badge">⭐ 星星: <span id="advStars">0</span></span>
+                            <span class="badge" style="background:var(--blue);color:#fff;">🏅 关卡: <span id="advLevel">1</span></span>
+                        </div>
+                        <div id="adventureGame">
+                            <div id="advQuestion" style="font-size:22px;font-weight:700;text-align:center;padding:12px 0;">点击「开始闯关」🚀</div>
+                            <div id="advDisplay" class="text-center"></div>
+                            <div class="option-grid" id="advOptions" style="max-width:400px;margin:0 auto;"></div>
+                            <div class="level-progress" id="advProgress" style="justify-content:center;"></div>
+                            <div class="text-center mt-12">
+                                <button class="btn btn-primary" id="startAdventureBtn">🚀 开始闯关</button>
+                                <button class="btn btn-yellow" id="resetAdventureBtn" style="margin-left:8px;">🔄 重置</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🎖️ 成就徽章墙</div>
+                        <div class="badge-wall" id="badgeWall"></div>
+                    </div>
+                </div>
+
+            </div><!-- /page-container -->
+        </div><!-- /main -->
+
+        <!-- ===== 移动端底部 Tab ===== -->
+        <nav class="bottom-tab" id="bottomTab">
+            <button class="tab-item active" data-page="alphabet">
+                <span class="tab-icon">🔤</span>
+                <span class="tab-label">字母</span>
+            </button>
+            <button class="tab-item" data-page="poetry">
+                <span class="tab-icon">📜</span>
+                <span class="tab-label">古诗</span>
+            </button>
+            <button class="tab-item" data-page="numbers">
+                <span class="tab-icon">🔢</span>
+                <span class="tab-label">数字</span>
+            </button>
+            <button class="tab-item" data-page="logic">
+                <span class="tab-icon">🧩</span>
+                <span class="tab-label">逻辑</span>
+            </button>
+            <button class="tab-item" data-page="adventure">
+                <span class="tab-icon">🏆</span>
+                <span class="tab-label">闯关</span>
+            </button>
+        </nav>
+
+        <!-- ===== Toast 反馈 ===== -->
+        <div class="overlay" id="overlay"></div>
+        <div class="toast" id="toast">
+            <div class="toast-icon" id="toastIcon">⭐</div>
+            <div class="toast-msg" id="toastMsg">太棒了！</div>
+            <div class="toast-sub" id="toastSub"></div>
+            <button class="btn btn-primary" id="toastBtn">继续</button>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  数据 & 状态
+        // ================================================================
+
+        // ---- 古诗数据 (含拼音) ----
+        // 格式: 每句为一个数组，每个元素 { char, pinyin }
+        const POEMS = [{
+            id: 0,
+            title: '咏鹅',
+            author: '骆宾王',
+            lines: [
+                [{ char: '鹅', pinyin: 'é' }, { char: '鹅', pinyin: 'é' }, { char: '鹅', pinyin: 'é' }],
+                [{ char: '曲', pinyin: 'qǔ' }, { char: '项', pinyin: 'xiàng' }, { char: '向', pinyin: 'xiàng' },
+                { char: '天', pinyin: 'tiān' }, { char: '歌', pinyin: 'gē' }],
+                [{ char: '白', pinyin: 'bái' }, { char: '毛', pinyin: 'máo' }, { char: '浮', pinyin: 'fú' },
+                { char: '绿', pinyin: 'lǜ' }, { char: '水', pinyin: 'shuǐ' }],
+                [{ char: '红', pinyin: 'hóng' }, { char: '掌', pinyin: 'zhǎng' }, { char: '拨', pinyin: 'bō' },
+                { char: '清', pinyin: 'qīng' }, { char: '波', pinyin: 'bō' }]
+            ]
+        }, {
+            id: 1,
+            title: '静夜思',
+            author: '李白',
+            lines: [
+                [{ char: '床', pinyin: 'chuáng' }, { char: '前', pinyin: 'qián' }, { char: '明', pinyin: 'míng' },
+                { char: '月', pinyin: 'yuè' }, { char: '光', pinyin: 'guāng' }],
+                [{ char: '疑', pinyin: 'yí' }, { char: '是', pinyin: 'shì' }, { char: '地', pinyin: 'dì' },
+                { char: '上', pinyin: 'shàng' }, { char: '霜', pinyin: 'shuāng' }],
+                [{ char: '举', pinyin: 'jǔ' }, { char: '头', pinyin: 'tóu' }, { char: '望', pinyin: 'wàng' },
+                { char: '明', pinyin: 'míng' }, { char: '月', pinyin: 'yuè' }],
+                [{ char: '低', pinyin: 'dī' }, { char: '头', pinyin: 'tóu' }, { char: '思', pinyin: 'sī' },
+                { char: '故', pinyin: 'gù' }, { char: '乡', pinyin: 'xiāng' }]
+            ]
+        }, {
+            id: 2,
+            title: '春晓',
+            author: '孟浩然',
+            lines: [
+                [{ char: '春', pinyin: 'chūn' }, { char: '眠', pinyin: 'mián' }, { char: '不', pinyin: 'bù' },
+                { char: '觉', pinyin: 'jué' }, { char: '晓', pinyin: 'xiǎo' }],
+                [{ char: '处', pinyin: 'chù' }, { char: '处', pinyin: 'chù' }, { char: '闻', pinyin: 'wén' },
+                { char: '啼', pinyin: 'tí' }, { char: '鸟', pinyin: 'niǎo' }],
+                [{ char: '夜', pinyin: 'yè' }, { char: '来', pinyin: 'lái' }, { char: '风', pinyin: 'fēng' },
+                { char: '雨', pinyin: 'yǔ' }, { char: '声', pinyin: 'shēng' }],
+                [{ char: '花', pinyin: 'huā' }, { char: '落', pinyin: 'luò' }, { char: '知', pinyin: 'zhī' },
+                { char: '多', pinyin: 'duō' }, { char: '少', pinyin: 'shǎo' }]
+            ]
+        }, {
+            id: 3,
+            title: '登鹳雀楼',
+            author: '王之涣',
+            lines: [
+                [{ char: '白', pinyin: 'bái' }, { char: '日', pinyin: 'rì' }, { char: '依', pinyin: 'yī' },
+                { char: '山', pinyin: 'shān' }, { char: '尽', pinyin: 'jìn' }],
+                [{ char: '黄', pinyin: 'huáng' }, { char: '河', pinyin: 'hé' }, { char: '入', pinyin: 'rù' },
+                { char: '海', pinyin: 'hǎi' }, { char: '流', pinyin: 'liú' }],
+                [{ char: '欲', pinyin: 'yù' }, { char: '穷', pinyin: 'qióng' }, { char: '千', pinyin: 'qiān' },
+                { char: '里', pinyin: 'lǐ' }, { char: '目', pinyin: 'mù' }],
+                [{ char: '更', pinyin: 'gèng' }, { char: '上', pinyin: 'shàng' }, { char: '一', pinyin: 'yī' },
+                { char: '层', pinyin: 'céng' }, { char: '楼', pinyin: 'lóu' }]
+            ]
+        }, {
+            id: 4,
+            title: '望庐山瀑布',
+            author: '李白',
+            lines: [
+                [{ char: '日', pinyin: 'rì' }, { char: '照', pinyin: 'zhào' }, { char: '香', pinyin: 'xiāng' },
+                { char: '炉', pinyin: 'lú' }, { char: '生', pinyin: 'shēng' }, { char: '紫', pinyin: 'zǐ' },
+                { char: '烟', pinyin: 'yān' }],
+                [{ char: '遥', pinyin: 'yáo' }, { char: '看', pinyin: 'kàn' }, { char: '瀑', pinyin: 'pù' },
+                { char: '布', pinyin: 'bù' }, { char: '挂', pinyin: 'guà' }, { char: '前', pinyin: 'qián' },
+                { char: '川', pinyin: 'chuān' }],
+                [{ char: '飞', pinyin: 'fēi' }, { char: '流', pinyin: 'liú' }, { char: '直', pinyin: 'zhí' },
+                { char: '下', pinyin: 'xià' }, { char: '三', pinyin: 'sān' }, { char: '千', pinyin: 'qiān' },
+                { char: '尺', pinyin: 'chǐ' }],
+                [{ char: '疑', pinyin: 'yí' }, { char: '是', pinyin: 'shì' }, { char: '银', pinyin: 'yín' },
+                { char: '河', pinyin: 'hé' }, { char: '落', pinyin: 'luò' }, { char: '九', pinyin: 'jiǔ' },
+                { char: '天', pinyin: 'tiān' }]
+            ]
+        }, {
+            id: 5,
+            title: '绝句',
+            author: '杜甫',
+            lines: [
+                [{ char: '两', pinyin: 'liǎng' }, { char: '个', pinyin: 'gè' }, { char: '黄', pinyin: 'huáng' },
+                { char: '鹂', pinyin: 'lí' }, { char: '鸣', pinyin: 'míng' }, { char: '翠', pinyin: 'cuì' },
+                { char: '柳', pinyin: 'liǔ' }],
+                [{ char: '一', pinyin: 'yī' }, { char: '行', pinyin: 'háng' }, { char: '白', pinyin: 'bái' },
+                { char: '鹭', pinyin: 'lù' }, { char: '上', pinyin: 'shàng' }, { char: '青', pinyin: 'qīng' },
+                { char: '天', pinyin: 'tiān' }],
+                [{ char: '窗', pinyin: 'chuāng' }, { char: '含', pinyin: 'hán' }, { char: '西', pinyin: 'xī' },
+                { char: '岭', pinyin: 'lǐng' }, { char: '千', pinyin: 'qiān' }, { char: '秋', pinyin: 'qiū' },
+                { char: '雪', pinyin: 'xuě' }],
+                [{ char: '门', pinyin: 'mén' }, { char: '泊', pinyin: 'bó' }, { char: '东', pinyin: 'dōng' },
+                { char: '吴', pinyin: 'wú' }, { char: '万', pinyin: 'wàn' }, { char: '里', pinyin: 'lǐ' },
+                { char: '船', pinyin: 'chuán' }]
+            ]
+        }, {
+            id: 6,
+            title: '悯农',
+            author: '李绅',
+            lines: [
+                [{ char: '锄', pinyin: 'chú' }, { char: '禾', pinyin: 'hé' }, { char: '日', pinyin: 'rì' },
+                { char: '当', pinyin: 'dāng' }, { char: '午', pinyin: 'wǔ' }],
+                [{ char: '汗', pinyin: 'hàn' }, { char: '滴', pinyin: 'dī' }, { char: '禾', pinyin: 'hé' },
+                { char: '下', pinyin: 'xià' }, { char: '土', pinyin: 'tǔ' }],
+                [{ char: '谁', pinyin: 'shuí' }, { char: '知', pinyin: 'zhī' }, { char: '盘', pinyin: 'pán' },
+                { char: '中', pinyin: 'zhōng' }, { char: '餐', pinyin: 'cān' }],
+                [{ char: '粒', pinyin: 'lì' }, { char: '粒', pinyin: 'lì' }, { char: '皆', pinyin: 'jiē' },
+                { char: '辛', pinyin: 'xīn' }, { char: '苦', pinyin: 'kǔ' }]
+            ]
+        }, {
+            id: 7,
+            title: '江南',
+            author: '汉乐府',
+            lines: [
+                [{ char: '江', pinyin: 'jiāng' }, { char: '南', pinyin: 'nán' }, { char: '可', pinyin: 'kě' },
+                { char: '采', pinyin: 'cǎi' }, { char: '莲', pinyin: 'lián' }],
+                [{ char: '莲', pinyin: 'lián' }, { char: '叶', pinyin: 'yè' }, { char: '何', pinyin: 'hé' },
+                { char: '田', pinyin: 'tián' }, { char: '田', pinyin: 'tián' }],
+                [{ char: '鱼', pinyin: 'yú' }, { char: '戏', pinyin: 'xì' }, { char: '莲', pinyin: 'lián' },
+                { char: '叶', pinyin: 'yè' }, { char: '间', pinyin: 'jiān' }],
+                [{ char: '鱼', pinyin: 'yú' }, { char: '戏', pinyin: 'xì' }, { char: '莲', pinyin: 'lián' },
+                { char: '叶', pinyin: 'yè' }, { char: '东', pinyin: 'dōng' }],
+                [{ char: '鱼', pinyin: 'yú' }, { char: '戏', pinyin: 'xì' }, { char: '莲', pinyin: 'lián' },
+                { char: '叶', pinyin: 'yè' }, { char: '西', pinyin: 'xī' }],
+                [{ char: '鱼', pinyin: 'yú' }, { char: '戏', pinyin: 'xì' }, { char: '莲', pinyin: 'lián' },
+                { char: '叶', pinyin: 'yè' }, { char: '南', pinyin: 'nán' }],
+                [{ char: '鱼', pinyin: 'yú' }, { char: '戏', pinyin: 'xì' }, { char: '莲', pinyin: 'lián' },
+                { char: '叶', pinyin: 'yè' }, { char: '北', pinyin: 'běi' }]
+            ]
+        }];
+
+        // ---- 徽章定义 ----
+        const BADGE_DEFS = [
+            { id: 'badge_abc', name: '字母小达人', icon: '🔤', condition: s => s.pairCount >= 26 },
+            { id: 'badge_poem', name: '古诗小才子', icon: '📜', condition: s => s.poemReadCount >= 8 },
+            { id: 'badge_math', name: '算术小能手', icon: '🧮', condition: s => s.mathCorrect >= 20 },
+            { id: 'badge_logic', name: '逻辑小天才', icon: '🧩', condition: s => s.logicCorrect >= 15 },
+            { id: 'badge_star', name: '星星收集者', icon: '⭐', condition: s => s.totalStars >= 30 },
+            { id: 'badge_adv', name: '闯关小勇士', icon: '🏆', condition: s => s.advLevel >= 5 },
+        ];
+
+        // ---- 应用状态 (持久化) ----
+        let state = {
+            // 字母配对
+            pairTarget: 'A',
+            pairMatched: [],
+            pairOptions: [],
+            pairSelected: null, // 'upper' or 'lower'
+            pairFirstPick: null,
+            // 字母发音
+            // 古诗
+            poemReadCount: 0,
+            // 数学
+            mathCorrect: 0,
+            mathTotal: 0,
+            // 逻辑
+            logicCorrect: 0,
+            logicTotal: 0,
+            // 闯关
+            advLevel: 1,
+            advStars: 0,
+            advQuestions: [],
+            advIndex: 0,
+            advAnswered: false,
+            advCorrectCount: 0,
+            // 星星总数（用于徽章）
+            totalStars: 0,
+            // 徽章
+            badges: [],
+            // 配对进度
+            pairCount: 0,
+        };
+
+        // ---- 临时变量 ----
+        let currentPoemId = null;
+        let logicType = 'pattern';
+        let logicData = null;
+        let countGameData = null;
+        let isToastShowing = false;
+
+        // ================================================================
+        //  工具函数
+        // ================================================================
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function pick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        // ---- 语音合成 ----
+        function speakText(text, callback) {
+            if (!window.speechSynthesis) {
+                if (callback) callback();
+                return;
+            }
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.0;
+            utterance.volume = 1;
+            if (callback) {
+                utterance.onend = callback;
+                utterance.onerror = callback;
+            }
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function speakLetter(letter) {
+            speakText(letter);
+        }
+
+        function speakPoem(poemData) {
+            const fullText = poemData.lines.flat().map(c => c.char).join('');
+            speakText(fullText);
+        }
+
+        // ---- Toast ----
+        function showToast(icon, msg, sub = '', autoClose = true) {
+            if (isToastShowing) return;
+            isToastShowing = true;
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastSub').textContent = sub;
+            document.getElementById('toast').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+            if (autoClose) {
+                setTimeout(() => {
+                    hideToast();
+                }, 2000);
+            }
+        }
+
+        function hideToast() {
+            document.getElementById('toast').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+            isToastShowing = false;
+        }
+        document.getElementById('toastBtn').addEventListener('click', hideToast);
+        document.getElementById('overlay').addEventListener('click', hideToast);
+
+        // ---- localStorage ----
+        function saveState() {
+            try {
+                const data = {
+                    pairMatched: state.pairMatched,
+                    pairCount: state.pairCount,
+                    poemReadCount: state.poemReadCount,
+                    mathCorrect: state.mathCorrect,
+                    mathTotal: state.mathTotal,
+                    logicCorrect: state.logicCorrect,
+                    logicTotal: state.logicTotal,
+                    advLevel: state.advLevel,
+                    advStars: state.advStars,
+                    totalStars: state.totalStars,
+                    badges: state.badges,
+                };
+                localStorage.setItem('baby_learning_state', JSON.stringify(data));
+            } catch (e) {}
+        }
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem('baby_learning_state');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                Object.assign(state, data);
+                // 确保数组存在
+                if (!state.badges) state.badges = [];
+                if (!state.pairMatched) state.pairMatched = [];
+                state.pairCount = state.pairMatched.length;
+            } catch (e) {}
+        }
+
+        // ---- 更新星星显示 ----
+        function updateStarsUI() {
+            document.getElementById('totalStars').textContent = state.totalStars;
+            document.getElementById('advStars').textContent = state.advStars;
+            document.getElementById('advLevel').textContent = state.advLevel;
+        }
+
+        // ---- 更新徽章 ----
+        function updateBadges() {
+            const wall = document.getElementById('badgeWall');
+            wall.innerHTML = '';
+            let unlocked = 0;
+            BADGE_DEFS.forEach(def => {
+                const unlocked_flag = state.badges.includes(def.id);
+                if (unlocked_flag) unlocked++;
+                const div = document.createElement('div');
+                div.className = 'badge-item' + (unlocked_flag ? '' : ' locked');
+                div.innerHTML = `
+              <div class="badge-icon">${def.icon}</div>
+              <div class="badge-name">${unlocked_flag ? def.name : '🔒 未解锁'}</div>
+            `;
+                wall.appendChild(div);
+            });
+            // 检查并解锁新徽章
+            BADGE_DEFS.forEach(def => {
+                if (!state.badges.includes(def.id) && def.condition(state)) {
+                    state.badges.push(def.id);
+                    showToast('🎉', `解锁徽章: ${def.name}`, def.icon + ' 太棒啦！', true);
+                }
+            });
+            saveState();
+        }
+
+        // ---- 检查并更新所有徽章 ----
+        function checkAllBadges() {
+            BADGE_DEFS.forEach(def => {
+                if (!state.badges.includes(def.id) && def.condition(state)) {
+                    state.badges.push(def.id);
+                    showToast('🎉', `解锁徽章: ${def.name}`, def.icon + ' 继续加油！', true);
+                }
+            });
+            saveState();
+            updateBadges();
+        }
+
+        // ================================================================
+        //  模块: 字母乐园
+        // ================================================================
+
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+        function renderAlphabet() {
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = '';
+            alphabet.forEach(letter => {
+                const div = document.createElement('div');
+                div.className = 'letter-card';
+                div.textContent = letter;
+                div.dataset.letter = letter;
+                div.addEventListener('click', () => {
+                    speakLetter(letter);
+                    div.style.transform = 'scale(0.85)';
+                    setTimeout(() => div.style.transform = '', 200);
+                });
+                grid.appendChild(div);
+            });
+        }
+
+        // ---- 配对游戏 ----
+        function initPairGame() {
+            // 如果已经配对了全部，重置
+            if (state.pairMatched.length >= 26) {
+                state.pairMatched = [];
+                state.pairCount = 0;
+                saveState();
+            }
+            generatePairRound();
+        }
+
+        function generatePairRound() {
+            const allLetters = alphabet.filter(l => !state.pairMatched.includes(l));
+            if (allLetters.length === 0) {
+                document.getElementById('pairTarget').textContent = '🎉';
+                document.getElementById('pairOptions').innerHTML =
+                '<div style="grid-column:1/-1;text-align:center;font-size:20px;color:var(--green);">全部配对完成！太棒啦！🎉</div>';
+                document.getElementById('pairProgress').textContent = '已配对: 26 / 26 🎉';
+                return;
+            }
+            // 随机选一个未配对的大写字母
+            const target = pick(allLetters);
+            state.pairTarget = target;
+            document.getElementById('pairTarget').textContent = target;
+
+            // 生成选项：1个正确小写 + 3个干扰
+            const lowerTarget = target.toLowerCase();
+            const allLower = alphabet.map(l => l.toLowerCase());
+            let candidates = allLower.filter(l => l !== lowerTarget);
+            shuffle(candidates);
+            const distractors = candidates.slice(0, 3);
+            let options = [lowerTarget, ...distractors];
+            shuffle(options);
+            state.pairOptions = options;
+
+            const container = document.getElementById('pairOptions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.dataset.value = opt;
+                btn.addEventListener('click', () => handlePairClick(opt));
+                container.appendChild(btn);
+            });
+
+            document.getElementById('pairProgress').textContent = `已配对: ${state.pairMatched.length} / 26`;
+        }
+
+        function handlePairClick(selected) {
+            const target = state.pairTarget;
+            const lowerTarget = target.toLowerCase();
+            const btns = document.querySelectorAll('#pairOptions .option-btn');
+            // 禁用所有按钮
+            btns.forEach(b => b.style.pointerEvents = 'none');
+
+            if (selected === lowerTarget) {
+                // 正确
+                btns.forEach(b => {
+                    if (b.dataset.value === selected) b.classList.add('selected-correct');
+                });
+                state.pairMatched.push(target);
+                state.pairCount = state.pairMatched.length;
+                // 增加星星
+                state.totalStars += 1;
+                updateStarsUI();
+                showToast('⭐', '配对正确！', target + ' ↔ ' + lowerTarget, true);
+                saveState();
+                setTimeout(() => {
+                    generatePairRound();
+                    updateBadges();
+                }, 600);
+            } else {
+                // 错误
+                btns.forEach(b => {
+                    if (b.dataset.value === selected) b.classList.add('selected-wrong');
+                    if (b.dataset.value === lowerTarget) b.classList.add('show-correct');
+                });
+                showToast('😅', '再想想哦～', '试试找 ' + target + ' 的小写', true);
+                setTimeout(() => {
+                    btns.forEach(b => {
+                        b.classList.remove('selected-wrong', 'show-correct');
+                        b.style.pointerEvents = 'auto';
+                    });
+                }, 800);
+            }
+        }
+
+        document.getElementById('resetPairBtn').addEventListener('click', () => {
+            state.pairMatched = [];
+            state.pairCount = 0;
+            saveState();
+            generatePairRound();
+            updateBadges();
+            showToast('🔄', '重新开始配对啦！', '', true);
+        });
+
+        // ================================================================
+        //  模块: 古诗花园
+        // ================================================================
+
+        function renderPoemList() {
+            const container = document.getElementById('poemList');
+            container.innerHTML = '';
+            POEMS.forEach((poem, idx) => {
+                const div = document.createElement('div');
+                div.className = 'poem-card';
+                const preview = poem.lines.slice(0, 2).map(line => line.map(c => c.char).join('')).join('，');
+                div.innerHTML = `
+              <div>
+                <span class="poem-title">${poem.title}</span>
+                <span class="poem-author">— ${poem.author}</span>
+              </div>
+              <div class="poem-preview">${preview}…</div>
+            `;
+                div.addEventListener('click', () => showPoemDetail(idx));
+                container.appendChild(div);
+            });
+        }
+
+        function showPoemDetail(idx) {
+            currentPoemId = idx;
+            const poem = POEMS[idx];
+            document.getElementById('poemList').style.display = 'none';
+            document.getElementById('poemDetailContainer').style.display = 'block';
+            const content = document.getElementById('poemDetailContent');
+            content.innerHTML = `
+            <div style="text-align:center;margin-bottom:10px;">
+              <span style="font-size:28px;font-weight:700;color:var(--purple);">${poem.title}</span>
+              <span style="font-size:18px;color:#888;margin-left:12px;">— ${poem.author}</span>
+            </div>
+            <div class="poem-lines">
+          `;
+            poem.lines.forEach(line => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'poem-line';
+                line.forEach(item => {
+                    const span = document.createElement('span');
+                    span.className = 'char-with-pinyin';
+                    span.innerHTML = `
+                <span class="pinyin">${item.pinyin}</span>
+                <span class="hanzi">${item.char}</span>
+              `;
+                    lineDiv.appendChild(span);
+                });
+                content.querySelector('.poem-lines').appendChild(lineDiv);
+            });
+            content.innerHTML += '</div>';
+
+            // 标记已读
+            if (!state.poemReadCount) state.poemReadCount = 0;
+            // 简单计数：每读一首加1，但不重复加
+            // 用已读列表记录
+            if (!state._readPoems) state._readPoems = [];
+            if (!state._readPoems.includes(idx)) {
+                state._readPoems.push(idx);
+                state.poemReadCount = state._readPoems.length;
+                saveState();
+                updateBadges();
+            }
+        }
+
+        document.getElementById('backToPoemList').addEventListener('click', () => {
+            document.getElementById('poemList').style.display = 'block';
+            document.getElementById('poemDetailContainer').style.display = 'none';
+            currentPoemId = null;
+        });
+
+        document.getElementById('readPoemBtn').addEventListener('click', () => {
+            if (currentPoemId === null) return;
+            const poem = POEMS[currentPoemId];
+            const fullText = poem.lines.flat().map(c => c.char).join('');
+            speakText(fullText);
+            showToast('🔊', '正在朗读…', poem.title, true);
+        });
+
+        // ================================================================
+        //  模块: 数字王国
+        // ================================================================
+
+        function renderNumbers() {
+            const grid = document.getElementById('numberGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i <= 20; i++) {
+                const div = document.createElement('div');
+                div.className = 'num-card';
+                div.innerHTML = `
+              <div>${i}</div>
+              <div class="num-dots">${'●'.repeat(Math.min(i, 10))}${i > 10 ? '…' : ''}</div>
+            `;
+                div.addEventListener('click', () => {
+                    speakText(String(i));
+                    div.style.transform = 'scale(0.90)';
+                    setTimeout(() => div.style.transform = '', 200);
+                });
+                grid.appendChild(div);
+            }
+        }
+
+        // ---- 加减法 ----
+        function generateMath() {
+            const isAdd = Math.random() < 0.5;
+            let a, b, answer, symbol;
+            if (isAdd) {
+                a = randomInt(0, 9);
+                b = randomInt(0, 9 - a);
+                answer = a + b;
+                symbol = '+';
+            } else {
+                a = randomInt(1, 10);
+                b = randomInt(0, a);
+                answer = a - b;
+                symbol = '−';
+            }
+            const question = `${a} ${symbol} ${b} = ?`;
+            document.getElementById('mathQuestion').textContent = question;
+
+            // 生成选项
+            let options = [answer];
+            while (options.length < 4) {
+                let fake = answer + randomInt(-3, 3);
+                if (fake >= 0 && fake <= 10 && !options.includes(fake)) {
+                    options.push(fake);
+                }
+            }
+            shuffle(options);
+            const container = document.getElementById('mathOptions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.dataset.value = opt;
+                btn.addEventListener('click', () => handleMathAnswer(btn, opt, answer));
+                container.appendChild(btn);
+            });
+            // 存储答案
+            container.dataset.answer = answer;
+            container.dataset.answered = 'false';
+        }
+
+        function handleMathAnswer(btn, selected, answer) {
+            const container = document.getElementById('mathOptions');
+            if (container.dataset.answered === 'true') return;
+            container.dataset.answered = 'true';
+            const allBtns = container.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+            if (selected === answer) {
+                btn.classList.add('selected-correct');
+                state.mathCorrect++;
+                state.totalStars += 1;
+                updateStarsUI();
+                showToast('🌟', '答对啦！', '你真聪明！', true);
+                saveState();
+                updateBadges();
+            } else {
+                btn.classList.add('selected-wrong');
+                allBtns.forEach(b => {
+                    if (Number(b.dataset.value) === answer) b.classList.add('show-correct');
+                });
+                showToast('😊', '再想想～', '正确答案是 ' + answer, true);
+            }
+            state.mathTotal++;
+            document.getElementById('mathScore').textContent = `✅ ${state.mathCorrect} 题`;
+            setTimeout(() => {
+                generateMath();
+            }, 1200);
+        }
+
+        document.getElementById('newMathBtn').addEventListener('click', generateMath);
+
+        // ---- 数数小游戏 ----
+        function generateCountGame() {
+            const count = randomInt(1, 10);
+            const emojis = ['🍎', '🍌', '🍇', '🍉', '🍓', '🍒', '🍑', '🥝', '🍊', '🍋'];
+            const items = [];
+            for (let i = 0; i < count; i++) {
+                items.push(pick(emojis));
+            }
+            countGameData = { count, items };
+            const display = document.getElementById('countItemsDisplay');
+            display.innerHTML = items.map((emoji, idx) =>
+                `<span class="count-item" style="animation-delay:${idx * 0.05}s">${emoji}</span>`
+            ).join('');
+
+            // 选项
+            let options = [count];
+            while (options.length < 4) {
+                let fake = count + randomInt(-3, 3);
+                if (fake >= 0 && fake <= 12 && !options.includes(fake)) {
+                    options.push(fake);
+                }
+            }
+            shuffle(options);
+            const container = document.getElementById('countOptions');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.dataset.value = opt;
+                btn.addEventListener('click', () => handleCountAnswer(btn, opt, count));
+                container.appendChild(btn);
+            });
+            container.dataset.answered = 'false';
+        }
+
+        function handleCountAnswer(btn, selected, correct) {
+            const container = document.getElementById('countOptions');
+            if (container.dataset.answered === 'true') return;
+            container.dataset.answered = 'true';
+            const allBtns = container.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                btn.classList.add('selected-correct');
+                state.totalStars += 1;
+                updateStarsUI();
+                showToast('🌟', '数对了！', '一共 ' + correct + ' 个', true);
+                saveState();
+                updateBadges();
+            } else {
+                btn.classList.add('selected-wrong');
+                allBtns.forEach(b => {
+                    if (Number(b.dataset.value) === correct) b.classList.add('show-correct');
+                });
+                showToast('😅', '再数一遍～', '答案是 ' + correct, true);
+            }
+            setTimeout(() => {
+                generateCountGame();
+            }, 1200);
+        }
+
+        document.getElementById('newCountBtn').addEventListener('click', generateCountGame);
+
+        // ================================================================
+        //  模块: 逻辑挑战
+        // ================================================================
+
+        // ---- 找规律 ----
+        function generatePattern() {
+            const shapes = ['🔺', '🔵', '🟢', '🟡', '🟣', '🔶', '🔷', '⭕'];
+            const patternTypes = [
+                // 简单交替
+                () => {
+                    const s = pick(shapes);
+                    const s2 = pick(shapes.filter(x => x !== s));
+                    return {
+                        display: [s, s2, s, s2, s, '?'],
+                        options: [s, s2, pick(shapes.filter(x => x !== s && x !== s2))],
+                        answer: s2
+                    };
+                },
+                // ABCABC
+                () => {
+                    const a = pick(shapes),
+                        b = pick(shapes.filter(x => x !== a));
+                    let c = pick(shapes.filter(x => x !== a && x !== b));
+                    return {
+                        display: [a, b, c, a, b, '?'],
+                        options: [a, b, c],
+                        answer: c
+                    };
+                },
+                // 递增
+                () => {
+                    const base = pick(['🔺', '🔵', '🟢']);
+                    const seq = [base, base + base, base + base + base];
+                    return {
+                        display: [seq[0], seq[1], '?'],
+                        options: [seq[0], seq[1], seq[2]],
+                        answer: seq[2]
+                    };
+                }
+            ];
+            const gen = pick(patternTypes);
+            const data = gen();
+            // 确保选项有4个
+            let options = data.options.slice();
+            while (options.length < 4) {
+                let extra = pick(shapes);
+                if (!options.includes(extra)) options.push(extra);
+            }
+            shuffle(options);
+            return {
+                type: 'pattern',
+                display: data.display,
+                options: options,
+                answer: data.answer,
+                question: '🔮 下一个是什么？'
+            };
+        }
+
+        // ---- 图形配对 ----
+        function generatePairLogic() {
+            const shapes = ['🔺', '🔵', '🟢', '🟡', '🟣', '🔶', '🔷', '⭕'];
+            const pairs = shuffle(shapes.slice()).slice(0, 4);
+            const items = shuffle([...pairs, ...pairs]);
+            return {
+                type: 'pair',
+                display: items,
+                options: [], // 不需要选项，点击匹配
+                answer: null,
+                question: '🎯 点击相同的图形配对',
+                pairItems: items
+            };
+        }
+
+        // ---- 排序 ----
+        function generateSort() {
+            const nums = shuffle([1, 2, 3, 4, 5]).slice(0, randomInt(3, 4));
+            const sorted = [...nums].sort((a, b) => a - b);
+            return {
+                type: 'sort',
+                display: shuffle([...nums]),
+                options: [],
+                answer: sorted,
+                question: '📊 按从小到大排序（点击数字依次排列）',
+                sortItems: nums
+            };
+        }
+
+        // ---- 逻辑主控 ----
+        let logicAnswered = false;
+
+        function generateLogic() {
+            logicAnswered = false;
+            let data;
+            if (logicType === 'pattern') {
+                data = generatePattern();
+            } else if (logicType === 'pair') {
+                data = generatePairLogic();
+            } else {
+                data = generateSort();
+            }
+            logicData = data;
+            renderLogicQuestion(data);
+        }
+
+        function renderLogicQuestion(data) {
+            document.getElementById('logicQuestion').textContent = data.question;
+            const display = document.getElementById('logicDisplay');
+            display.innerHTML = '';
+
+            if (data.type === 'pattern') {
+                const container = document.createElement('div');
+                container.className = 'pattern-display';
+                data.display.forEach((item, idx) => {
+                    const span = document.createElement('span');
+                    span.className = 'pattern-item' + (item === '?' ? ' question' : '');
+                    span.textContent = item;
+                    container.appendChild(span);
+                });
+                display.appendChild(container);
+                // 选项
+                const optContainer = document.getElementById('logicOptions');
+                optContainer.innerHTML = '';
+                data.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.dataset.value = opt;
+                    btn.addEventListener('click', () => handleLogicAnswer(btn, opt, data.answer));
+                    optContainer.appendChild(btn);
+                });
+                document.getElementById('logicOptions').style.display = 'grid';
+            } else if (data.type === 'pair') {
+                document.getElementById('logicOptions').style.display = 'none';
+                const grid = document.createElement('div');
+                grid.className = 'pair-grid';
+                data.pairItems.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'pair-item';
+                    div.textContent = item;
+                    div.dataset.idx = idx;
+                    div.dataset.value = item;
+                    div.dataset.matched = 'false';
+                    div.addEventListener('click', () => handlePairLogicClick(div, data.pairItems));
+                    grid.appendChild(div);
+                });
+                display.appendChild(grid);
+                // 显示提示
+                const hint = document.createElement('div');
+                hint.className = 'text-center mt-12';
+                hint.style.fontSize = '16px';
+                hint.style.color = '#888';
+                hint.textContent = '点击两个相同的图形配对 ✨';
+                display.appendChild(hint);
+            } else if (data.type === 'sort') {
+                document.getElementById('logicOptions').style.display = 'none';
+                const container = document.createElement('div');
+                container.className = 'sort-container';
+                container.dataset.sortItems = JSON.stringify(data.sortItems);
+                container.dataset.answer = JSON.stringify(data.answer);
+                container.dataset.placed = '[]';
+                // 显示打乱的项
+                data.display.forEach((item) => {
+                    const div = document.createElement('div');
+                    div.className = 'sort-item';
+                    div.textContent = item;
+                    div.dataset.value = item;
+                    div.addEventListener('click', () => handleSortClick(div, container));
+                    container.appendChild(div);
+                });
+                display.appendChild(container);
+                // 显示放置区
+                const placeArea = document.createElement('div');
+                placeArea.className = 'sort-container';
+                placeArea.style.border = '3px dashed #DDD';
+                placeArea.style.borderRadius = '16px';
+                placeArea.style.padding = '12px';
+                placeArea.style.minHeight = '60px';
+                placeArea.id = 'sortPlaceArea';
+                placeArea.textContent = '👆 点击数字按顺序排列';
+                display.appendChild(placeArea);
+            }
+            document.getElementById('logicScore').textContent = `✅ ${state.logicCorrect} 题`;
+        }
+
+        // ---- 逻辑: 找规律 答案 ----
+        function handleLogicAnswer(btn, selected, correct) {
+            if (logicAnswered) return;
+            logicAnswered = true;
+            const allBtns = document.querySelectorAll('#logicOptions .option-btn');
+            allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+            if (selected === correct) {
+                btn.classList.add('selected-correct');
+                state.logicCorrect++;
+                state.totalStars += 1;
+                updateStarsUI();
+                showToast('🌟', '规律找到了！', '太棒啦！', true);
+                saveState();
+                updateBadges();
+            } else {
+                btn.classList.add('selected-wrong');
+                allBtns.forEach(b => {
+                    if (b.dataset.value === correct) b.classList.add('show-correct');
+                });
+                showToast('😊', '再观察一下～', '试试看规律', true);
+            }
+            state.logicTotal++;
+            document.getElementById('logicScore').textContent = `✅ ${state.logicCorrect} 题`;
+            setTimeout(() => {
+                generateLogic();
+            }, 1200);
+        }
+
+        // ---- 逻辑: 图形配对 ----
+        let pairLogicSelected = null;
+        let pairLogicMatched = [];
+
+        function handlePairLogicClick(div, items) {
+            if (div.dataset.matched === 'true') return;
+            const value = div.dataset.value;
+            const idx = Number(div.dataset.idx);
+
+            // 如果已经选了一个
+            if (pairLogicSelected !== null) {
+                const first = pairLogicSelected;
+                if (first === div) {
+                    // 取消选择
+                    div.classList.remove('selected');
+                    pairLogicSelected = null;
+                    return;
+                }
+                // 检查是否匹配
+                if (first.dataset.value === value && first.dataset.idx !== idx) {
+                    // 匹配成功
+                    first.dataset.matched = 'true';
+                    div.dataset.matched = 'true';
+                    first.classList.remove('selected');
+                    first.classList.add('matched');
+                    div.classList.add('matched');
+                    state.logicCorrect++;
+                    state.totalStars += 1;
+                    updateStarsUI();
+                    showToast('🌟', '配对成功！', '继续配对吧', true);
+                    saveState();
+                    updateBadges();
+                    pairLogicSelected = null;
+                    // 检查是否全部配对
+                    const allItems = document.querySelectorAll('.pair-item');
+                    const allMatched = Array.from(allItems).every(el => el.dataset.matched === 'true');
+                    if (allMatched) {
+                        state.logicTotal++;
+                        document.getElementById('logicScore').textContent = `✅ ${state.logicCorrect} 题`;
+                        setTimeout(() => {
+                            generateLogic();
+                        }, 800);
+                    }
+                } else {
+                    // 匹配失败
+                    first.classList.remove('selected');
+                    div.classList.add('selected-wrong');
+                    setTimeout(() => {
+                        div.classList.remove('selected-wrong');
+                    }, 500);
+                    pairLogicSelected = null;
+                    showToast('😅', '不匹配哦，再试试', '', true);
+                }
+                return;
+            }
+
+            // 第一次选择
+            div.classList.add('selected');
+            pairLogicSelected = div;
+        }
+
+        // ---- 逻辑: 排序 ----
+        function handleSortClick(div, container) {
+            if (div.classList.contains('placed')) return;
+            const placeArea = document.getElementById('sortPlaceArea');
+            const value = div.dataset.value;
+            // 获取当前已放置的列表
+            let placed = JSON.parse(container.dataset.placed || '[]');
+            const answer = JSON.parse(container.dataset.answer);
+
+            // 检查是否已经放置了所有
+            if (placed.length >= answer.length) return;
+
+            // 添加到放置区
+            placed.push(value);
+            container.dataset.placed = JSON.stringify(placed);
+
+            // 在放置区显示
+            const span = document.createElement('span');
+            span.className = 'sort-item placed';
+            span.textContent = value;
+            placeArea.appendChild(span);
+
+            // 标记原项为已放置
+            div.classList.add('placed');
+
+            // 检查是否完成
+            if (placed.length === answer.length) {
+                // 检查是否正确
+                const isCorrect = placed.every((v, i) => Number(v) === answer[i]);
+                if (isCorrect) {
+                    state.logicCorrect++;
+                    state.totalStars += 1;
+                    updateStarsUI();
+                    showToast('🌟', '排序正确！', '你真棒！', true);
+                    saveState();
+                    updateBadges();
+                } else {
+                    showToast('😅', '顺序不太对～', '再试试吧', true);
+                    // 重置
+                    setTimeout(() => {
+                        container.dataset.placed = '[]';
+                        placeArea.innerHTML = '👆 点击数字按顺序排列';
+                        document.querySelectorAll('.sort-item').forEach(el => {
+                            el.classList.remove('placed');
+                        });
+                        // 重新打乱
+                        const items = JSON.parse(container.dataset.sortItems);
+                        const shuffled = shuffle([...items]);
+                        const parent = container.parentElement;
+                        const newContainer = document.createElement('div');
+                        newContainer.className = 'sort-container';
+                        newContainer.dataset.sortItems = JSON.stringify(items);
+                        newContainer.dataset.answer = JSON.stringify(answer);
+                        newContainer.dataset.placed = '[]';
+                        shuffled.forEach(item => {
+                            const d = document.createElement('div');
+                            d.className = 'sort-item';
+                            d.textContent = item;
+                            d.dataset.value = item;
+                            d.addEventListener('click', () => handleSortClick(d, newContainer));
+                            newContainer.appendChild(d);
+                        });
+                        container.replaceWith(newContainer);
+                        // 更新placeArea
+                        const newPlace = document.createElement('div');
+                        newPlace.className = 'sort-container';
+                        newPlace.style.border = '3px dashed #DDD';
+                        newPlace.style.borderRadius = '16px';
+                        newPlace.style.padding = '12px';
+                        newPlace.style.minHeight = '60px';
+                        newPlace.id = 'sortPlaceArea';
+                        newPlace.textContent = '👆 点击数字按顺序排列';
+                        document.getElementById('sortPlaceArea').replaceWith(newPlace);
+                    }, 1000);
+                    return;
+                }
+                state.logicTotal++;
+                document.getElementById('logicScore').textContent = `✅ ${state.logicCorrect} 题`;
+                setTimeout(() => {
+                    generateLogic();
+                }, 1200);
+            }
+        }
+
+        // ---- 逻辑类型切换 ----
+        document.querySelectorAll('[data-logic]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                logicType = btn.dataset.logic;
+                document.querySelectorAll('[data-logic]').forEach(b => {
+                    b.style.opacity = '0.6';
+                    b.style.transform = 'scale(0.95)';
+                });
+                btn.style.opacity = '1';
+                btn.style.transform = 'scale(1)';
+                pairLogicSelected = null;
+                pairLogicMatched = [];
+                generateLogic();
+            });
+        });
+        // 默认选中找规律
+        document.querySelector('[data-logic="pattern"]').style.opacity = '1';
+        document.querySelector('[data-logic="pattern"]').style.transform = 'scale(1)';
+
+        document.getElementById('newLogicBtn').addEventListener('click', generateLogic);
+
+        // ================================================================
+        //  模块: 闯关冒险
+        // ================================================================
+
+        // ---- 生成闯关题目（综合） ----
+        function generateAdventureQuestions(level) {
+            const questions = [];
+            const count = 5 + Math.min(level, 3); // 5-8题
+            const types = ['alphabet', 'math', 'logic', 'count', 'pattern'];
+
+            for (let i = 0; i < count; i++) {
+                const type = pick(types);
+                let q = null;
+                switch (type) {
+                    case 'alphabet': {
+                        const letters = alphabet.filter(l => !state.pairMatched.includes(l));
+                        const target = letters.length > 0 ? pick(letters) : pick(alphabet);
+                        const lowerTarget = target.toLowerCase();
+                        let opts = [lowerTarget];
+                        const allLower = alphabet.map(l => l.toLowerCase());
+                        let candidates = allLower.filter(l => l !== lowerTarget);
+                        shuffle(candidates);
+                        opts = opts.concat(candidates.slice(0, 3));
+                        shuffle(opts);
+                        q = {
+                            type: 'alphabet',
+                            question: `🔤  "${target}" 的小写是哪个？`,
+                            display: target,
+                            options: opts,
+                            answer: lowerTarget
+                        };
+                        break;
+                    }
+                    case 'math': {
+                        const isAdd = Math.random() < 0.5;
+                        let a, b, ans, sym;
+                        if (isAdd) {
+                            a = randomInt(0, 8);
+                            b = randomInt(0, 9 - a);
+                            ans = a + b;
+                            sym = '+';
+                        } else {
+                            a = randomInt(1, 9);
+                            b = randomInt(0, a);
+                            ans = a - b;
+                            sym = '−';
+                        }
+                        let opts = [ans];
+                        while (opts.length < 4) {
+                            let f = ans + randomInt(-3, 3);
+                            if (f >= 0 && f <= 10 && !opts.includes(f)) opts.push(f);
+                        }
+                        shuffle(opts);
+                        q = {
+                            type: 'math',
+                            question: `🧮  ${a} ${sym} ${b} = ?`,
+                            display: `${a} ${sym} ${b}`,
+                            options: opts,
+                            answer: ans
+                        };
+                        break;
+                    }
+                    case 'logic': {
+                        const shapes = ['🔺', '🔵', '🟢', '🟡'];
+                        const s1 = pick(shapes),
+                            s2 = pick(shapes.filter(x => x !== s1));
+                        let opts = [s1, s2];
+                        while (opts.length < 4) {
+                            let extra = pick(shapes);
+                            if (!opts.includes(extra)) opts.push(extra);
+                        }
+                        shuffle(opts);
+                        const seq = [s1, s2, s1, s2, s1, '?'];
+                        q = {
+                            type: 'logic',
+                            question: '🔮 下一个是什么？',
+                            display: seq,
+                            options: opts,
+                            answer: s2
+                        };
+                        break;
+                    }
+                    case 'count': {
+                        const num = randomInt(2, 8);
+                        const emojis = ['🍎', '🍌', '🍇', '🍉', '🍓', '🍒'];
+                        const items = Array.from({ length: num }, () => pick(emojis));
+                        let opts = [num];
+                        while (opts.length < 4) {
+                            let f = num + randomInt(-2, 2);
+                            if (f >= 0 && f <= 10 && !opts.includes(f)) opts.push(f);
+                        }
+                        shuffle(opts);
+                        q = {
+                            type: 'count',
+                            question: '🔢 数一数有几个？',
+                            display: items,
+                            options: opts,
+                            answer: num
+                        };
+                        break;
+                    }
+                    case 'pattern': {
+                        const shapes = ['🔺', '🔵', '🟢', '🟡'];
+                        const a = pick(shapes),
+                            b = pick(shapes.filter(x => x !== a));
+                        let c = pick(shapes.filter(x => x !== a && x !== b));
+                        let opts = [a, b, c];
+                        while (opts.length < 4) {
+                            let extra = pick(shapes);
+                            if (!opts.includes(extra)) opts.push(extra);
+                        }
+                        shuffle(opts);
+                        q = {
+                            type: 'pattern',
+                            question: '🔮 找规律，选下一个',
+                            display: [a, b, c, a, b, '?'],
+                            options: opts,
+                            answer: c
+                        };
+                        break;
+                    }
+                }
+                if (q) questions.push(q);
+            }
+            return questions;
+        }
+
+        let advAnswered = false;
+
+        function startAdventure() {
+            state.advQuestions = generateAdventureQuestions(state.advLevel);
+            state.advIndex = 0;
+            state.advCorrectCount = 0;
+            state.advAnswered = false;
+            renderAdventureQuestion();
+            updateAdventureProgress();
+            document.getElementById('startAdventureBtn').textContent = '⏭️ 下一关';
+        }
+
+        function renderAdventureQuestion() {
+            const qs = state.advQuestions;
+            if (state.advIndex >= qs.length) {
+                // 闯关完成
+                const starsEarned = state.advCorrectCount;
+                state.advStars += starsEarned;
+                state.totalStars += starsEarned;
+                updateStarsUI();
+                showToast('🏆', `闯关完成！获得 ${starsEarned} 颗星`, `关卡 ${state.advLevel} 通过！`, true);
+                if (starsEarned >= qs.length * 0.7) {
+                    state.advLevel++;
+                    saveState();
+                    updateBadges();
+                }
+                document.getElementById('advQuestion').textContent = '🎉 闯关完成！点击「开始闯关」继续下一关';
+                document.getElementById('advDisplay').innerHTML = '';
+                document.getElementById('advOptions').innerHTML = '';
+                document.getElementById('advProgress').innerHTML = '';
+                document.getElementById('startAdventureBtn').textContent = '🚀 开始闯关';
+                state.advQuestions = [];
+                return;
+            }
+
+            const q = qs[state.advIndex];
+            document.getElementById('advQuestion').textContent = `第 ${state.advIndex + 1} 题：${q.question}`;
+            const display = document.getElementById('advDisplay');
+            display.innerHTML = '';
+
+            if (q.type === 'alphabet') {
+                display.innerHTML = `<div style="font-size:48px;font-weight:700;padding:10px;">${q.display}</div>`;
+            } else if (q.type === 'math') {
+                display.innerHTML = `<div style="font-size:40px;font-weight:700;padding:10px;">${q.display} = ?</div>`;
+            } else if (q.type === 'logic' || q.type === 'pattern') {
+                const container = document.createElement('div');
+                container.className = 'pattern-display';
+                q.display.forEach((item, idx) => {
+                    const span = document.createElement('span');
+                    span.className = 'pattern-item' + (item === '?' ? ' question' : '');
+                    span.textContent = item;
+                    container.appendChild(span);
+                });
+                display.appendChild(container);
+            } else if (q.type === 'count') {
+                const container = document.createElement('div');
+                container.className = 'count-items';
+                q.display.forEach((emoji, idx) => {
+                    const span = document.createElement('span');
+                    span.className = 'count-item';
+                    span.style.animationDelay = (idx * 0.05) + 's';
+                    span.textContent = emoji;
+                    container.appendChild(span);
+                });
+                display.appendChild(container);
+            }
+
+            // 选项
+            const optContainer = document.getElementById('advOptions');
+            optContainer.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.dataset.value = opt;
+                btn.addEventListener('click', () => handleAdventureAnswer(btn, opt, q.answer));
+                optContainer.appendChild(btn);
+            });
+            advAnswered = false;
+            updateAdventureProgress();
+        }
+
+        function handleAdventureAnswer(btn, selected, correct) {
+            if (advAnswered) return;
+            advAnswered = true;
+            const allBtns = document.querySelectorAll('#advOptions .option-btn');
+            allBtns.forEach(b => b.style.pointerEvents = 'none');
+
+            const qs = state.advQuestions;
+            const q = qs[state.advIndex];
+            const isCorrect = selected === correct;
+
+            if (isCorrect) {
+                btn.classList.add('selected-correct');
+                state.advCorrectCount++;
+                state.totalStars += 1;
+                updateStarsUI();
+                showToast('⭐', '答对了！', '继续加油 💪', true);
+                saveState();
+                updateBadges();
+            } else {
+                btn.classList.add('selected-wrong');
+                allBtns.forEach(b => {
+                    if (b.dataset.value == correct) b.classList.add('show-correct');
+                });
+                showToast('😊', '再想想～', '正确答案是 ' + correct, true);
+            }
+
+            setTimeout(() => {
+                state.advIndex++;
+                renderAdventureQuestion();
+                updateAdventureProgress();
+            }, 1000);
+        }
+
+        function updateAdventureProgress() {
+            const container = document.getElementById('advProgress');
+            const qs = state.advQuestions;
+            if (!qs || qs.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = '';
+            qs.forEach((_, idx) => {
+                const dot = document.createElement('span');
+                dot.className = 'level-dot';
+                if (idx < state.advIndex) {
+                    dot.classList.add('done');
+                    dot.textContent = '✓';
+                } else if (idx === state.advIndex) {
+                    dot.classList.add('active');
+                    dot.textContent = idx + 1;
+                } else {
+                    dot.textContent = idx + 1;
+                }
+                container.appendChild(dot);
+            });
+        }
+
+        document.getElementById('startAdventureBtn').addEventListener('click', () => {
+            if (state.advQuestions && state.advQuestions.length > 0 && state.advIndex < state.advQuestions.length) {
+                // 继续当前闯关
+                return;
+            }
+            startAdventure();
+        });
+
+        document.getElementById('resetAdventureBtn').addEventListener('click', () => {
+            state.advLevel = 1;
+            state.advStars = 0;
+            state.advQuestions = [];
+            state.advIndex = 0;
+            state.advCorrectCount = 0;
+            saveState();
+            updateStarsUI();
+            document.getElementById('advQuestion').textContent = '已重置 🚀 点击「开始闯关」';
+            document.getElementById('advDisplay').innerHTML = '';
+            document.getElementById('advOptions').innerHTML = '';
+            document.getElementById('advProgress').innerHTML = '';
+            document.getElementById('startAdventureBtn').textContent = '🚀 开始闯关';
+            showToast('🔄', '闯关已重置', '从头开始吧！', true);
+        });
+
+        // ================================================================
+        //  导航系统
+        // ================================================================
+
+        const pageTitles = {
+            alphabet: '🔤 字母乐园',
+            poetry: '📜 古诗花园',
+            numbers: '🔢 数字王国',
+            logic: '🧩 逻辑挑战',
+            adventure: '🏆 闯关冒险'
+        };
+
+        function navigateTo(page) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+
+            // 显示目标页面
+            const targetPage = document.getElementById('page-' + page);
+            if (targetPage) targetPage.classList.add('active');
+
+            // 高亮导航
+            document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+            document.querySelector(`.tab-item[data-page="${page}"]`)?.classList.add('active');
+
+            document.getElementById('pageTitle').textContent = pageTitles[page] || page;
+
+            // 如果切换到古诗列表，确保列表可见
+            if (page === 'poetry') {
+                document.getElementById('poemList').style.display = 'block';
+                document.getElementById('poemDetailContainer').style.display = 'none';
+            }
+        }
+
+        // 点击导航
+        document.querySelectorAll('.nav-item, .tab-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const page = el.dataset.page;
+                if (page) navigateTo(page);
+            });
+        });
+
+        // ================================================================
+        //  初始化
+        // ================================================================
+
+        function init() {
+            loadState();
+
+            // 渲染各模块
+            renderAlphabet();
+            renderPoemList();
+            renderNumbers();
+
+            // 初始化配对
+            initPairGame();
+
+            // 数学
+            generateMath();
+            document.getElementById('mathScore').textContent = `✅ ${state.mathCorrect} 题`;
+
+            // 数数
+            generateCountGame();
+
+            // 逻辑
+            generateLogic();
+            document.getElementById('logicScore').textContent = `✅ ${state.logicCorrect} 题`;
+
+            // 闯关
+            updateStarsUI();
+            updateBadges();
+            document.getElementById('advLevel').textContent = state.advLevel;
+
+            // 导航到默认页面
+            navigateTo('alphabet');
+
+            // 如果已解锁的徽章，更新墙
+            updateBadges();
+
+            // 自动保存
+            setInterval(saveState, 30000);
+
+            console.log('🎈 宝贝学习乐园 已启动！');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 处理窗口resize，确保UI适应
+        window.addEventListener('resize', () => {});
+    </script>
+
+</body>
+</html>
